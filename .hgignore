@@ -1,2 +1,6 @@
 syntax: glob
 StewartPlatform/Library/
+StewartPlatform/.vs/
+*.csproj
+StewartPlatform/obj/
+StewartPlatform/StewartPlatform.sln
