@@ -5,9 +5,28 @@ using UnityEngine.UI;
 
 public class Platform : MonoBehaviour
 {
-    public Slider posX, posY, posZ, rotX, rotY, rotZ;
-    public float s = 1;
+    [Header("Constants")]
+    public float SCALE_INITIAL_HEIGHT = 100f; //  250
+    public float SCALE_BASE_RADIUS = 100f; //140
+    public float SCALE_PLATFORM_RADIUS = 100f;
+    public float SCALE_HORN_LENGTH = 30f;
+    public float SCALE_LEG_LENGTH = 105; // 270
 
+    public float MAX_TRANSLATION = 50;
+    public float MAX_ROTATION = Mathf.PI / 2f;
+
+    [Space(20)]
+    public float scale = 1;
+
+    [Header("Component GameObjects")]
+    public GameObject topPlate;
+    public GameObject[] actuatorArms;
+    public GameObject[] topPlateAttachmentPoints;
+    public GameObject[] actuatorAttachmentPoints;
+
+    [Header("UI")]
+    public Slider posX;
+    public Slider posY, posZ, rotX, rotY, rotZ; // Put on new line to avoid weird inspector issue with header
     public Text[] angleText;
 
     private Vector3 translation = new Vector3(), rotation = new Vector3(), initialHeight = new Vector3();
@@ -15,32 +34,23 @@ public class Platform : MonoBehaviour
     private float[] alpha = new float[6];
     private float baseRadius, platformRadius, hornLength, legLength;
 
-    private float[] baseAngles = new float[] {
+    private readonly float[] baseAngles = new float[] {
    314.9f, 345.1f, 74.9f, 105.1f, 194.9f, 225.1f };
 
-    private float[] platformAngles = new float[]{
+    private readonly float[] platformAngles = new float[]{
    322.9f, 337.1f, 82.9f, 97.1f, 202.9f, 217.1f};
 
-    private float[] beta = new float[]{
+    private readonly float[] beta = new float[]{
    -8*Mathf.PI/3, Mathf.PI/3, 0, -Mathf.PI, -4*Mathf.PI/3, -7*Mathf.PI/3};
-
-    private const float SCALE_INITIAL_HEIGHT = 120; //  250
-    private const float SCALE_BASE_RADIUS = 65.43f; //140
-    private const float SCALE_PLATFORM_RADIUS = 76.35f;
-    private const float SCALE_HORN_LENGTH = 36;
-    private const float SCALE_LEG_LENGTH = 125; // 270
-
-    private const float MAX_TRANSLATION = 50;
-    private const float MAX_ROTATION = Mathf.PI / 2f;
 
     // Use this for initialization
     void Start()
     {
-        initialHeight = new Vector3(0, 0, s * SCALE_INITIAL_HEIGHT);
-        baseRadius = s * SCALE_BASE_RADIUS;
-        platformRadius = s * SCALE_PLATFORM_RADIUS;
-        hornLength = s * SCALE_HORN_LENGTH;
-        legLength = s * SCALE_LEG_LENGTH;
+        initialHeight = new Vector3(0, 0, scale * SCALE_INITIAL_HEIGHT);
+        baseRadius = scale * SCALE_BASE_RADIUS;
+        platformRadius = scale * SCALE_PLATFORM_RADIUS;
+        hornLength = scale * SCALE_HORN_LENGTH;
+        legLength = scale * SCALE_LEG_LENGTH;
 
         for (int i = 0; i < 6; i++)
         {
@@ -67,16 +77,22 @@ public class Platform : MonoBehaviour
         //Debug.DrawLine(Vector3.zero, new Vector3(5, 5, 0));
 
         // Adjust position and rotation based on slider values;
-        transform.position = new Vector3(posX.value, posY.value, posZ.value);
-        transform.rotation = Quaternion.Euler(rotX.value * 90f, rotY.value * 90f, rotZ.value * 90f);
-        translation = transform.position * MAX_TRANSLATION;
+        topPlate.transform.position = new Vector3(posX.value, posY.value, posZ.value) / 2f;
+        topPlate.transform.rotation = Quaternion.Euler(rotX.value * 90f, rotY.value * 90f, rotZ.value * 90f);
+        translation = topPlate.transform.position * MAX_TRANSLATION;
         rotation = (new Vector3(rotX.value, rotY.value, rotZ.value)) * MAX_ROTATION;
         calcQ();
         calcAlpha();
 
-        for(int i =0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         {
             angleText[i].text = "" + Mathf.Rad2Deg * alpha[i];
+
+            Vector3 euler = actuatorArms[i].transform.localEulerAngles;
+            euler.y = Mathf.Pow(-1, i + 1) * Mathf.Rad2Deg * alpha[i];
+            actuatorArms[i].transform.localEulerAngles = euler;
+
+            Debug.DrawLine(actuatorAttachmentPoints[i].transform.position, topPlateAttachmentPoints[i].transform.position);
         }
     }
 
