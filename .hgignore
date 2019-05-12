@@ -4,3 +4,4 @@ StewartPlatform/.vs/
 *.csproj
 StewartPlatform/obj/
 StewartPlatform/StewartPlatform.sln
+StewartPlatform/Logs/
