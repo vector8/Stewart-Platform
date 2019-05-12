@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO.Ports;
 
 public class Platform : MonoBehaviour
 {
@@ -43,6 +44,9 @@ public class Platform : MonoBehaviour
     private readonly float[] beta = new float[]{
    -8*Mathf.PI/3, Mathf.PI/3, 0, -Mathf.PI, -4*Mathf.PI/3, -7*Mathf.PI/3};
 
+    public string port;
+    private SerialPort sp;
+
     // Use this for initialization
     void Start()
     {
@@ -70,6 +74,17 @@ public class Platform : MonoBehaviour
             A[i] = new Vector3(0, 0, 0);
         }
         calcQ();
+
+        try
+        {
+            sp = new SerialPort(port, 9600);
+            sp.Open();
+            sp.ReadTimeout = 10;
+        }
+        catch (System.Exception e)
+        {
+
+        }
     }
 
     void FixedUpdate()
@@ -84,9 +99,20 @@ public class Platform : MonoBehaviour
         calcQ();
         calcAlpha();
 
+        int direction = 1;
         for (int i = 0; i < 6; i++)
         {
             angleText[i].text = "" + Mathf.Rad2Deg * alpha[i];
+            try
+            {
+                sp.Write(((int)(direction * Mathf.Rad2Deg * alpha[i] + 90)).ToString() + ",");
+            }
+            catch (System.Exception e)
+            {
+
+            }
+
+            direction *= -1;
 
             Vector3 euler = actuatorArms[i].transform.localEulerAngles;
             euler.y = Mathf.Pow(-1, i + 1) * Mathf.Rad2Deg * alpha[i];
